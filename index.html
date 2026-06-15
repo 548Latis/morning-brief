@@ -1,1 +1,1172 @@
-<!-- morning brief -->
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>晨报 Pro</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --up: #3fb950;
+  --dn: #f85149;
+  --up-bg: rgba(63,185,80,0.12);
+  --dn-bg: rgba(248,81,73,0.12);
+  --up-mid: rgba(63,185,80,0.2);
+  --dn-mid: rgba(248,81,73,0.2);
+  --up-strong: rgba(63,185,80,0.35);
+  --dn-strong: rgba(248,81,73,0.35);
+  --accent: #1f6feb;
+  --gold: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', 'Helvetica Neue', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 16px 12px;
+  position: sticky; top: 0; z-index: 10;
+}
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.header-title { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+.header-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.sentiment-chip {
+  font-size: 10px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; letter-spacing: 0.5px;
+}
+.risk-on  { background: rgba(63,185,80,0.2);  color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
+.risk-off { background: rgba(248,81,73,0.2);  color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+.mixed    { background: rgba(210,153,34,0.2); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+.pulse-line {
+  font-size: 11.5px; color: var(--text2); margin-top: 8px;
+  line-height: 1.5; padding: 8px 10px;
+  background: var(--bg3); border-radius: 6px;
+  border-left: 3px solid var(--accent);
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  font-size: 12px; font-weight: 600; padding: 10px 14px;
+  color: var(--text3); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: all 0.15s;
+}
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--text2); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── SECTION ── */
+.section { padding: 12px 0; }
+.section-title {
+  font-size: 9.5px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 0 16px 6px;
+}
+
+/* ── PERFORMANCE TABLE ── */
+.perf-table { width: 100%; border-collapse: collapse; }
+.perf-table thead th {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: right; padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.perf-table thead th:first-child { text-align: left; padding-left: 16px; }
+.perf-table thead th:last-child { padding-right: 16px; }
+.perf-row { border-bottom: 1px solid rgba(48,54,61,0.6); }
+.perf-row:hover { background: rgba(255,255,255,0.02); }
+.perf-row td { padding: 8px 8px; vertical-align: middle; }
+.perf-row td:first-child { padding-left: 16px; }
+.perf-row td:last-child { padding-right: 16px; }
+.asset-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.asset-sub { font-size: 9.5px; color: var(--text3); margin-top: 1px; }
+.asset-price { font-size: 12.5px; font-weight: 700; color: var(--text); text-align: right; white-space: nowrap; }
+.pct-cell { text-align: right; }
+.pct-badge {
+  display: inline-block;
+  font-size: 10.5px; font-weight: 700;
+  padding: 3px 6px; border-radius: 4px;
+  min-width: 56px; text-align: center; white-space: nowrap;
+}
+.up-weak   { background: var(--up-bg);     color: var(--up); }
+.up-mid    { background: var(--up-mid);    color: #5bdc6e; }
+.up-strong { background: var(--up-strong); color: #7dffb3; }
+.dn-weak   { background: var(--dn-bg);     color: var(--dn); }
+.dn-mid    { background: var(--dn-mid);    color: #ff6b63; }
+.dn-strong { background: var(--dn-strong); color: #ff9a94; }
+.flat      { background: rgba(139,148,158,0.1); color: var(--text3); }
+
+/* ── DIVIDER ROW ── */
+.group-header td {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 10px 16px 4px; background: var(--bg);
+  border-bottom: none;
+}
+
+/* ── ANALYSIS CARDS ── */
+.analysis-grid { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.analysis-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.analysis-card-label {
+  font-size: 10px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
+}
+.analysis-card-title { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.analysis-card-body { font-size: 12px; color: var(--text2); line-height: 1.65; }
+
+/* ── SELL-SIDE ── */
+.ss-card {
+  margin: 0 12px 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 13px;
+}
+.ss-bank {
+  font-size: 9px; font-weight: 700; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 2px;
+}
+.ss-date { font-size: 9px; color: var(--text3); margin-bottom: 5px; }
+.ss-headline { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.ss-note { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+/* ── THEMES ── */
+.theme-list { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.theme-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 13px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.theme-num {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  min-width: 18px; margin-top: 1px;
+}
+.theme-text { font-size: 12px; color: var(--text2); line-height: 1.55; }
+
+/* ── CHARTS TAB ── */
+.chart-section { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.chart-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden;
+}
+.chart-card-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.7px;
+  padding: 9px 12px 0;
+}
+.tradingview-widget-container { height: 220px; }
+.tradingview-widget-container iframe { border: none; }
+.chart-placeholder {
+  height: 200px; display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 12px; flex-direction: column; gap: 6px;
+}
+.chart-placeholder a { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 600; }
+
+/* ── TIME TOGGLE ── */
+.time-toggle {
+  display: flex; gap: 4px; padding: 10px 16px 2px;
+}
+.time-btn {
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 4px; cursor: pointer; border: 1px solid var(--border);
+  background: transparent; color: var(--text3); transition: all 0.15s;
+}
+.time-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ── FOOTER ── */
+.footer {
+  text-align: center; font-size: 9.5px; color: var(--text3);
+  padding: 16px; border-top: 1px solid var(--border); margin-top: 4px;
+}
+
+/* ── SECTOR ROTATION ── */
+.sector-table { width: 100%; border-collapse: collapse; }
+.sector-table thead th {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: right; padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.sector-table thead th:first-child { text-align: left; padding-left: 16px; }
+.sector-table thead th:last-child { padding-right: 16px; }
+.sector-row { border-bottom: 1px solid rgba(48,54,61,0.6); }
+.sector-row:hover { background: rgba(255,255,255,0.02); }
+.sector-row td { padding: 7px 8px; vertical-align: top; }
+.sector-row td:first-child { padding-left: 16px; }
+.sector-row td:last-child { padding-right: 16px; text-align: right; }
+.sector-row td:nth-child(2) { text-align: right; }
+.sector-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.sector-ticker { font-size: 9.5px; color: var(--text3); margin-top: 1px; }
+.sector-note { font-size: 10px; color: var(--text3); margin-top: 3px; line-height: 1.4; max-width: 200px; }
+.signal-badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 9px; font-weight: 700;
+  padding: 2px 5px; border-radius: 3px; white-space: nowrap;
+  margin-bottom: 3px;
+}
+.sig-in     { background: rgba(63,185,80,0.15);  color: #3fb950; }
+.sig-out    { background: rgba(248,81,73,0.15);  color: #f85149; }
+.sig-neutral { background: rgba(139,148,158,0.12); color: var(--text2); }
+.rotation-narrative {
+  margin: 8px 12px 4px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 13px;
+  font-size: 11.5px; color: var(--text2); line-height: 1.6;
+  border-left: 3px solid var(--accent);
+}
+.market-label {
+  font-size: 9.5px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 10px 16px 4px;
+}
+
+/* ── SECTOR EXPAND ── */
+.sector-expand-btn {
+  display: inline-block; margin-top: 5px;
+  font-size: 9.5px; font-weight: 700; color: var(--accent);
+  background: transparent; border: 1px solid rgba(31,111,235,0.3);
+  padding: 2px 7px; border-radius: 3px; cursor: pointer;
+  transition: all 0.15s;
+}
+.sector-expand-btn:hover { background: rgba(31,111,235,0.1); }
+.sector-detail-panel {
+  display: none;
+  background: var(--bg3);
+  border-top: 1px solid var(--border);
+}
+.sector-detail-panel.open { display: block; }
+.sector-detail-inner { padding: 10px 16px 12px; }
+.performer-group-label {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 5px; margin-top: 8px;
+}
+.performer-group-label:first-child { margin-top: 0; }
+.performer-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-bottom: 1px solid rgba(48,54,61,0.35);
+}
+.performer-item:last-child { border-bottom: none; }
+.performer-left { display: flex; flex-direction: column; gap: 1px; }
+.performer-ticker-name { font-size: 12px; font-weight: 700; color: var(--text); }
+.performer-desc { font-size: 10px; color: var(--text3); }
+.sector-long-note {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid rgba(48,54,61,0.5);
+  font-size: 12px; color: var(--text2); line-height: 1.7;
+}
+
+/* ── FCN TABLE ── */
+.fcn-note {
+  margin: 0 12px 10px;
+  background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.25);
+  border-radius: 8px; padding: 10px 13px;
+  font-size: 11.5px; color: var(--text2); line-height: 1.55;
+}
+.fcn-table { width: 100%; border-collapse: collapse; }
+.fcn-table thead th {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: right; padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.fcn-table thead th:first-child { text-align: left; padding-left: 16px; }
+.fcn-table thead th:last-child { padding-right: 16px; }
+.fcn-row { border-bottom: 1px solid rgba(48,54,61,0.6); cursor: pointer; transition: background 0.1s; }
+.fcn-row:hover { background: rgba(210,153,34,0.04); }
+.fcn-row td { padding: 9px 8px; vertical-align: middle; }
+.fcn-row td:first-child { padding-left: 16px; }
+.fcn-row td:last-child { padding-right: 16px; text-align: right; }
+.fcn-name { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.fcn-sector-tag { font-size: 9px; color: var(--text3); }
+.fcn-iv-val { font-size: 12.5px; font-weight: 700; color: var(--gold); }
+.fcn-iv-note { font-size: 9.5px; color: var(--text3); }
+.fcn-expand-icon { font-size: 11px; color: var(--text3); transition: transform 0.2s; }
+.fcn-expand-icon.rotated { transform: rotate(180deg); }
+.fcn-detail-row { display: none; }
+.fcn-detail-row.open { display: table-row; }
+.fcn-detail-cell {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px !important;
+}
+.fcn-structure-box {
+  background: rgba(31,111,235,0.08); border: 1px solid rgba(31,111,235,0.2);
+  border-radius: 6px; padding: 9px 12px; margin-bottom: 12px;
+  font-size: 11.5px; color: var(--text2); line-height: 1.5;
+}
+.fcn-structure-label {
+  font-size: 9px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 3px;
+}
+.thesis-section { margin-bottom: 10px; }
+.thesis-label {
+  font-size: 9px; font-weight: 700; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 5px;
+}
+.thesis-body {
+  font-size: 12px; color: var(--text2); line-height: 1.7;
+}
+.thesis-tech {
+  background: var(--bg2); border-radius: 6px; padding: 10px 12px;
+  border-left: 3px solid var(--gold);
+  font-size: 12px; color: var(--text2); line-height: 1.65;
+}
+.fcn-group-row td {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.9px;
+  padding: 10px 16px 5px; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-title">📊 晨报 Pro</div>
+      <div class="header-sub" id="hdr-meta">—</div>
+    </div>
+    <div id="hdr-sentiment"></div>
+  </div>
+  <div class="pulse-line" id="hdr-pulse">加载中...</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('markets')">市场数据</div>
+  <div class="tab" onclick="switchTab('sectors')">板块轮动</div>
+  <div class="tab" onclick="switchTab('analysis')">驱动解读</div>
+  <div class="tab" onclick="switchTab('sellside')">卖方观点</div>
+  <div class="tab" onclick="switchTab('fcn')">FCN候选</div>
+</div>
+
+<!-- TAB: MARKETS -->
+<div class="tab-content active" id="tab-markets">
+  <div style="padding:10px 16px 2px; display:flex; align-items:center; justify-content:space-between;">
+    <span style="font-size:10px;color:var(--text3);">涨跌幅</span>
+    <div class="time-toggle" style="padding:0;">
+      <button class="time-btn active" onclick="setTimeframe('d1')">1D</button>
+      <button class="time-btn" onclick="setTimeframe('w1')">1W</button>
+      <button class="time-btn" onclick="setTimeframe('m1')">1M</button>
+      <button class="time-btn" onclick="setTimeframe('m6')">YTD</button>
+    </div>
+  </div>
+  <table class="perf-table">
+    <thead>
+      <tr>
+        <th style="text-align:left">资产</th>
+        <th>价格</th>
+        <th id="th-pct">1日</th>
+      </tr>
+    </thead>
+    <tbody id="market-tbody"></tbody>
+  </table>
+</div>
+
+<!-- TAB: SECTORS -->
+<div class="tab-content" id="tab-sectors">
+  <div style="height:4px"></div>
+  <div class="market-label">🇺🇸 美股板块轮动 · S&P 500</div>
+  <table class="sector-table">
+    <thead>
+      <tr>
+        <th style="text-align:left">板块</th>
+        <th>今日</th>
+        <th>年初至今</th>
+      </tr>
+    </thead>
+    <tbody id="us-sector-tbody"></tbody>
+  </table>
+  <div class="rotation-narrative" id="us-rotation-note"></div>
+
+  <div class="market-label" style="margin-top:10px">🇭🇰 港股板块轮动 · HSI</div>
+  <div id="hk-sector-list" style="padding: 0 12px;"></div>
+  <div class="rotation-narrative" id="hk-rotation-note"></div>
+  <div style="height:16px"></div>
+</div>
+
+<!-- TAB: ANALYSIS -->
+<div class="tab-content" id="tab-analysis">
+  <div style="height:8px"></div>
+  <div class="analysis-grid" id="analysis-grid"></div>
+</div>
+
+<!-- TAB: SELL-SIDE -->
+<div class="tab-content" id="tab-sellside">
+  <div style="height:8px"></div>
+  <div id="themes-section">
+    <div class="section-title" style="padding: 8px 16px 4px;">市场在讨论</div>
+    <div class="theme-list" id="theme-list"></div>
+  </div>
+  <div style="height:4px"></div>
+  <div class="section-title" style="padding: 8px 16px 4px;">卖方最新观点</div>
+  <div id="ss-list"></div>
+</div>
+
+<!-- TAB: FCN候选 -->
+<div class="tab-content" id="tab-fcn">
+  <div style="height:8px"></div>
+  <div class="fcn-note">
+    <strong style="color:var(--gold);">FCN候选筛选标准</strong><br>
+    隐含波动率 (IV) 明显高于历史均值 · 流动性充足 · 有明确基本面催化剂 · 结构适合做区间/轻看涨。
+    点击任一标的查看完整投资逻辑。
+  </div>
+  <table class="fcn-table">
+    <thead>
+      <tr>
+        <th style="text-align:left">标的</th>
+        <th>价格</th>
+        <th>今日</th>
+        <th>隐含波动率</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="fcn-tbody"></tbody>
+  </table>
+  <div style="height:16px"></div>
+</div>
+
+
+<div class="footer" id="footer-text">数据: Yahoo Finance · AI解读仅供参考 · 不构成投资建议</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  BRIEFING DATA — regenerated daily at 07:30 HKT
+// ═══════════════════════════════════════════════════
+const BRIEFING = {
+  date: "2026-06-13 (Fri)",
+  updatedAt: "2026-06-15 07:30 HKT",
+  sentiment: "RISK ON",
+  pulse: "SpaceX IPO首日+19.2%、市值$420B引爆全场，风险偏好切换至年内最高档。半导体集体重估：INTC+6.5% / AMD+4.7% / ROKU+20.1%。黄金→$4,236新高，白银+6.4%，铜+3.25%，贵金属&工业金属同步狂飙——但原油偏偏反向-4%（伊朗谈判+库存超预期），是今日最大宏观矛盾。KOSPI+4.6%领涨亚洲，日经+2.8%，恒指+1.9%，南向资金周净流入HK$98亿创4月新高。VIX -9%→17.68两月低位；10Y悄然逼近4.5%关口，若突破，股债双杀风险将令60/40组合面临2024年以来最大压力测试。今日核心矛盾：牛市叙事全面开花，长端利率正在积蓄破坏力。",
+
+  assets: [
+    { group: "美股" },
+    { name: "S&P 500",      tk: "^GSPC",     price: "7,431.46",  d1: "+0.50%", w1: "+1.18%", m1: "+3.4%",  m6: "+12.1%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "Nasdaq",       tk: "^IXIC",     price: "25,888",    d1: "+0.31%", w1: "+0.94%", m1: "+5.2%",  m6: "+18.3%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "Dow Jones",    tk: "^DJI",      price: "51,202",    d1: "+0.70%", w1: "+1.32%", m1: "+2.1%",  m6: "+8.4%",  up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "Russell 2000", tk: "^RUT",      price: "2,943.99",  d1: "+0.79%", w1: "+2.1%",  m1: "+1.8%",  m6: "+6.2%",  up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "VIX 恐慌指数",  tk: "^VIX",     price: "17.68",     d1: "-9.05%", w1: "-14.2%", m1: "-22.1%", m6: "-31.0%", up1d: false, upw: false, upm: false, um6: false },
+    { group: "亚洲" },
+    { name: "恒生指数",     tk: "HSI",       price: "24,718",    d1: "+1.93%", w1: "+3.6%",  m1: "+7.2%",  m6: "+24.5%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "上证综指",     tk: "000001.SS", price: "4,031.51",  d1: "+1.12%", w1: "+2.3%",  m1: "+4.8%",  m6: "+18.2%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "日经 225",     tk: "^N225",     price: "66,020",    d1: "+2.81%", w1: "+4.7%",  m1: "+8.3%",  m6: "+22.6%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "KOSPI",        tk: "^KS11",     price: "8,123.62",  d1: "+4.63%", w1: "+6.8%",  m1: "+10.2%", m6: "+29.4%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { group: "利率 & 汇率" },
+    { name: "美债 10Y",     tk: "US10Y",     price: "4.487%",    d1: "+0.54%", w1: "+2.1%",  m1: "+3.8%",  m6: "-5.2%",  up1d: true,  upw: true,  upm: true,  um6: false },
+    { name: "美债 30Y",     tk: "US30Y",     price: "4.975%",    d1: "+0.48%", w1: "+1.8%",  m1: "+2.9%",  m6: "-3.1%",  up1d: true,  upw: true,  upm: true,  um6: false },
+    { name: "USD Index",    tk: "DXY",       price: "99.77",     d1: "-0.09%", w1: "-0.8%",  m1: "-2.4%",  m6: "-7.3%",  up1d: false, upw: false, upm: false, um6: false },
+    { name: "USD/JPY",      tk: "JPY=X",     price: "160.23",    d1: "+0.20%", w1: "+0.7%",  m1: "+2.1%",  m6: "+5.4%",  up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "EUR/USD",      tk: "EURUSD=X",  price: "1.1571",    d1: "-0.09%", w1: "+0.3%",  m1: "+1.8%",  m6: "+5.6%",  up1d: false, upw: true,  upm: true,  um6: true  },
+    { name: "USD/CNH",      tk: "USDCNH=X",  price: "7.2341",    d1: "-0.12%", w1: "-0.4%",  m1: "-0.9%",  m6: "-2.1%",  up1d: false, upw: false, upm: false, um6: false },
+    { group: "大宗商品" },
+    { name: "黄金 Gold",    tk: "GC=F",      price: "$4,236",    d1: "+2.98%", w1: "+4.2%",  m1: "+8.7%",  m6: "+31.2%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "白银 Silver",  tk: "SI=F",      price: "$68.07",    d1: "+6.36%", w1: "+7.1%",  m1: "+12.4%", m6: "+38.5%", up1d: true,  upw: true,  upm: true,  um6: true  },
+    { name: "WTI 原油",     tk: "CL=F",      price: "$84.28",    d1: "-3.91%", w1: "-2.4%",  m1: "+0.3%",  m6: "+8.2%",  up1d: false, upw: false, upm: true,  um6: true  },
+  ],
+
+  drivers: [
+    {
+      label: "Nasdaq +0.31% — 科技板块",
+      title: "半导体领涨 · INTC+6.5% / AMD+4.7% · SpaceX引爆情绪",
+      body: "INTC +6.51% 领涨科技成交最活跃：本季度数据中心收入超预期+18% YoY，Gaudi 3 AI加速芯片在Azure和GCP获得新的大批量订单确认，Foundry Services外部客户管线首次超过内部需求——这是市场多年来等待的转折点信号。AMD +4.73% 跑赢：MI300X GPU季度出货量指引上调，Data Center GPU营收已突破$5B年化run rate，EPYC服务器CPU市占率升至27%。NVDA +0.16% 相对平稳反映短线获利了结，但AI训练硬件订单book-to-bill仍在1.4x以上高位。SpaceX（SPCX）首日收涨+19.2%，周边标的IREN（比特币挖矿+AI算力）+5.4%、HPE +2.93% 跟涨，太空经济叙事扩散至整个科技板块。SMCI -4.72% 成例外，信息披露合规担忧持续压制估值。"
+    },
+    {
+      label: "美债10Y +4bp → 4.487%",
+      title: "通胀韧性 + 财政赤字预期推升长端 · 5%关口临近",
+      body: "本周连续两个通胀数据超预期——CPI核心同比3.4%（预期3.2%），PPI环比+0.4%（预期+0.2%）——迫使市场重新定价首次降息时间：6月降息概率已降至0%，9月降息概率从75%下滑至~55%（CME FedWatch）。30Y升至4.975%，逼近5%整数关口；这一水平在历史上曾两次触发股市回调（2023年10月、2024年4月）。财政面：美国Q2财政赤字轨迹超预期，国债供给端压力不减，长端熊陡走势（bear steepening）的宏观背景未改变。TIPS实际收益率同步上行至2.28%，黄金的无息属性原本应受压，但央行购金逻辑独立于利率走势——这是当前金价持续新高的关键。市场当前最大疑问：30Y若突破5%，股市能否维持当前估值倍数（S&P forward P/E 21.4x）？"
+    },
+    {
+      label: "黄金 +2.98% → $4,236",
+      title: "实物需求 + 去美元化 + DXY破百构成三重共振",
+      body: "黄金今日的驱动已从单纯避险逻辑升级为结构性需求故事：①白银+6.4%、铜+3.25%、金银比压缩至62x（较年初78x大幅收窄），贵金属板块整体重估，而非黄金单独避险；②DXY跌破100心理关口（99.77），美元信用担忧升温，去美元化政策工具多元化需求推高实物黄金地位；③全球央行累计购金量：2025年全年购入约1,100吨，2026年Q1续购节奏年化超900吨，中国、波兰、土耳其是主要买方；④ ETF持仓周度净流入$3.2B，创年内新高。矿业股同步受益：CDE +4.88%、BTG +2.93%、NEM在盘前上涨，金矿股的杠杆效应（通常2-3x金价）使其成为进攻性黄金敞口工具。技术面：$4,200为新支撑位，$4,500是下一整数关口目标，卖方上调目标价平均幅度约+8%。"
+    },
+    {
+      label: "原油 WTI -3.91% → $84.28",
+      title: "伊朗供给预期 + OPEC+纪律松动 · 地缘溢价持续消退",
+      body: "原油单日-3.91%是全市场最大背离叙事：在整体RISK ON环境中，能源板块顺周期需求逻辑应该受益，但当天恰恰相反。有两个并发催化剂：①伊朗核协议谈判取得实质性进展，华盛顿-德黑兰渠道确认第三轮会谈已完成，市场预期伊朗180-200万桶/日的出口量有望在Q3正常化，在OPEC+已超额供给的背景下，这是边际供给冲击；②美国原油库存本周超预期累增320万桶（预期减少80万桶），库欣（Cushing）枢纽库存同步上升。WTI下方关键支撑：$80（200日均线），若OPEC+6月底会议确认增产，有效跌破$80的概率上升至30-35%。注意：能源板块YTD +28.93% 是全市场最强，高位叠加基本面转弱，获利了结压力仍未完全释放。"
+    },
+    {
+      label: "VIX -9.05% → 17.68",
+      title: "期权市场全面去杠杆 · 短波动率策略窗口",
+      body: "VIX单日-9%降至17.68，为近两月最低，同期SKEW指数（尾部风险溢价）从148降至132，put/call ratio下滑至0.78——期权市场正在全面给对冲解套定价。历史数据显示：VIX在15-20区间是short-vol策略的最佳布局窗口（Sharpe ratio 1.3x vs随机时点），但同样是下一轮波动的酝酿期。警示信号：S&P 500当前RSI(14) = 68.4，接近超买但尚未触发；市场广度指标（NYSE累计A/D线）未能同步创新高，显示本轮上涨由少数大市值股票驱动，结构性脆弱。SpaceX IPO周期内风险偏好往往在第2-3周后出现回撤，IPO后锁定期解禁（通常180天）是潜在供给压力。当前建议：利用VIX低位低成本布局保护性看跌期权，同时做多短端implied vol（买入VIX call spread）。"
+    }
+  ],
+
+  sellside: [
+    {
+      bank: "Goldman Sachs Equity Strategy",
+      date: "2026-06-13",
+      headline: "SpaceX IPO改变资本市场格局，上调科技权重",
+      note: "SpaceX完成史上规模最大的科技IPO（募资$6B，首日市值$420B），将直接引发主动基金的指数配置压力：一旦纳入S&P 500（预计6-9个月），被动资金被迫买入规模估计$18-22B。我们将科技板块权重从中性上调至超配，并特别关注太空经济生态：ASTS（卫星宽带）、LUNR（月球物流）、HPE（地面基础设施AI硬件）均是潜在受益标的。对于NVDA，维持12个月目标价$240，认为Blackwell B200系列2026 H2出货量仍有20-25%上行空间；市场当前低估了主权AI（Sovereign AI）需求——沙特、UAE、日本等政府级大单已进入执行阶段。黄金目标价上调至$4,600（此前$4,200），理由：我们将2026年全球央行购金预测从850吨上调至1,050吨，结构性驱动较利率走势更持久。"
+    },
+    {
+      bank: "JPMorgan Global Markets Strategy",
+      date: "2026-06-13",
+      headline: "10Y迫近4.5%关键位 · 股债相关性转正加剧配置压力",
+      note: "我们本周紧急更新资产配置框架：美股/美债相关性已从2025年的负相关转为正相关（30日滚动相关系数+0.38），意味着传统的60/40组合正在失效——股债双杀风险上升。当10Y突破4.5%，历史上S&P 500的forward P/E会收缩约0.8-1.2倍（当前21.4x面临压缩风险）。操作建议：①减持久期超过7年的美债头寸，转向通胀挂钩债券（TIPS）和短端（2Y）套利；②亚洲分配：港股/A股的估值折价（MSCI中国 9.2x P/E vs 美股21.4x）在全球高利率持续背景下更具吸引力，维持港股增配；南向资金继续净流入是核心观测指标，本周净流入HK$98亿，创4月以来周度新高。③大宗商品：超配黄金（替代长债配置功能），中性原油（OPEC+纪律松动是结构性风险）。"
+    },
+    {
+      bank: "Morgan Stanley Cross-Asset Research",
+      date: "2026-06-13",
+      headline: "INTC +6.5% 标志AI PC超级周期启动 · 半导体新叙事",
+      note: "今天INTC的+6.51%是市场定价一个新周期的开始，而不是短线反弹。三个验证点：①Intel Core Ultra 300 AI PC处理器开始获得Dell、HP、Lenovo的大批量预购，2026 H2 AI PC出货量预测被上调至1.4亿台（ 此前0.9亿）；②Foundry Services首个外部大客户（我们判断是Amazon AWS定制芯片项目）开始流片，这将使Intel的芯片代工实现 cash-flow breakeven，早于市场预期12个月；③Gaudi 3推理芯片在meta llama 3推理场景下token/dollar成本较H100低38%，是不拿NVDA预算的企业的替代选项。12个月目标价：我们将INTC从$110上调至$145（前提：Foundry Q4收入验证）。风险提示：高负债结构（净债务$210亿）使其对利率敏感，若10Y突破5%，估值会承压。目前期权市场对INTC的30日IV约65%，是做FCN结构性产品的优质标的窗口。"
+    }
+  ],
+
+  themes: [
+    "SpaceX IPO创2026最大科技上市 · SPCX首日+19.2%市值$420B · 问题是：一个主要靠Elon个人品牌溢价的公司，若纳入S&P 500指数，被动资金该如何定价？与特斯拉纳入时的争议高度相似",
+    "INTC +6.5% 触发做空回补 · 空头覆盖率估计$18亿 · 如果Intel Foundry Q4能交出外部客户收入数据，这个股票的空头持仓（约占流通股12%）将成为第二波上涨燃料——short squeeze逻辑清晰",
+    "黄金实际利率悖论：TIPS实际收益率+2.28%（按理应该压制黄金），但黄金今日+3%创新高。市场给出的答案：央行购金对实际利率的脱钩程度比历史模型预测的强得多，黄金已部分完成从风险资产到储备资产的重新分类",
+    "Fed降息时间线：6月会议（下周）焦点已从'降不降'转为'点阵图如何指引'。如果2026年点阵图中位降息次数从2次下调到1次，短端（2Y）可能上行20-30bp，dollar反弹，压制所有EM资产",
+    "日元160关口：BOJ日本央行持有国内债券量已占GDP的108%，加息每+25bp的财政成本约为GDP 0.8%。日元弱势是结构性的，但160是政治红线——上次BOJ在150和158各干预一次。USDJPY当前期权隐含的3个月区间：155-165"
+  ],
+
+  sectors: {
+    us: [
+      {
+        name: "通信服务", etf: "XLC", weight: "10.5%", d1: "+2.41%", ytd: "+9.61%", signal: "in",
+        note: "今日领涨 — 流媒体复苏 + 广告AI提振",
+        topPerformers: [
+          { name: "ROKU", ticker: "ROKU", change: "+20.1%", note: "流媒体Q1订阅户超预期，广告CPM改善" },
+          { name: "Alphabet", ticker: "GOOGL", change: "+0.5%", note: "AI搜索广告收入未被蚕食，云稳健" },
+          { name: "Verizon", ticker: "VZ", change: "+2.5%", note: "5G升级周期 + 企业AI服务" },
+        ],
+        worstPerformers: [
+          { name: "SoundHound AI", ticker: "SOUN", change: "-1.4%", note: "小市值AI语音 获利了结" },
+          { name: "BlackBerry", ticker: "BB", change: "-1.1%", note: "IoT安全业务增长低于预期" },
+        ],
+        longNote: "通信服务板块今日以+2.41%领涨全市场，背后是三条并行叙事：第一，ROKU +20.1%是最强信号——流媒体广告市场在AI精准投放工具加持下CPM（每千次展示成本）年化增长18%，比传统TV广告高出2.5倍，ROKU凭借其CTV（联网电视）平台正在切走线性电视的广告预算；第二，GOOGL +0.5%虽然涨幅温和，但意义重要：市场最初担心AI Overviews会侵蚀搜索广告收入，而Q1数据显示Search广告同比+14%，打消了核心焦虑；第三，VZ +2.49%体现的是5G to B端AI服务的新增长点——大企业私有网络（private 5G）正从POC转向规模化部署。整体来看，通信服务是今天唯一同时受益于'科技成长'和'广告周期复苏'两个叙事的板块，短期动量仍强。"
+      },
+      {
+        name: "科技", etf: "XLK", weight: "32.1%", d1: "+1.03%", ytd: "+15.78%", signal: "in",
+        note: "半导体主导 — INTC/AMD领涨，AI infra延续",
+        topPerformers: [
+          { name: "Intel", ticker: "INTC", change: "+6.51%", note: "Foundry客户确认 + AI PC订单超预期" },
+          { name: "AMD", ticker: "AMD", change: "+4.73%", note: "MI300X出货量上调，Data Center GPU加速" },
+          { name: "UMC", ticker: "UMC", change: "+4.59%", note: "成熟制程满产，汽车芯片需求改善" },
+          { name: "HPE", ticker: "HPE", change: "+2.93%", note: "AI服务器基础设施订单创新高" },
+        ],
+        worstPerformers: [
+          { name: "Super Micro", ticker: "SMCI", change: "-4.72%", note: "SEC信息披露调查担忧重燃" },
+          { name: "NVIDIA", ticker: "NVDA", change: "+0.16%", note: "相对跑输，获利了结，但趋势完整" },
+        ],
+        longNote: "科技板块的+1.03%数字低估了内部结构的剧烈变化：核心动力是半导体的全面重估，而非Mag-7的再次领跑。INTC的+6.51%是近两年最重要的信号之一：如果Intel Foundry Services能在2026 H2交出外部客户量产收入，整个代工格局将出现第三极（台积电-三星-英特尔），这对美国本土芯片供应链安全叙事是重大验证。AMD的+4.73%则印证了GPU市场不再是NVDA独占——MI300X在对延迟容忍度较高的推理场景（batch inference）中的成本优势已被企业采购部门接受，微软Azure已确认Mi300X部署规模将在H2翻倍。NVDA +0.16%的相对跑输不是基本面转弱，而是资金在板块内部再平衡：'买NVDA'叙事已是过度拥挤，资金转向寻找相同AI周期中的第二、三名受益者。"
+      },
+      {
+        name: "医疗健康", etf: "XLV", weight: "8.6%", d1: "+0.74%", ytd: "-0.43%", signal: "neutral",
+        note: "跟涨参与，YTD唯一负收益板块",
+        topPerformers: [
+          { name: "Alumis", ticker: "ALMS", change: "+15.5%", note: "小型生物制药 JAK抑制剂Phase 3数据" },
+          { name: "Enliven Therapeutics", ticker: "ELVN", change: "+14.3%", note: "BCR-ABL靶向治疗积极数据" },
+        ],
+        worstPerformers: [
+          { name: "NIKE", ticker: "NKE", change: "-2.2%", note: "注：NKE归属XLY，但消费健康同板块承压" },
+        ],
+        longNote: "医疗健康板块的+0.74%更多是跟随整体市场上涨的被动参与，而非板块内生驱动。YTD -0.43%是11个板块中唯一负收益，核心压制因素有三：①药价谈判预期（Medicare Negotiation 2.0）持续压制大型制药公司估值；②GLP-1（Ozempic/Wegovy）赛道的竞争加剧使制药巨头之间出现明显分化；③医疗设备公司受困于医院资本开支周期放缓。今日最强的上涨来自小型生物制药（ALMS +15.5%、ELVN +14.3%），这类个股的驱动完全是临床数据催化剂而非宏观逻辑。若Fed在9月降息、利率开始下行，医疗健康作为防御板块的配置价值将上升，当前是建仓观察期而非行动窗口。"
+      },
+      {
+        name: "可选消费", etf: "XLY", weight: "10.0%", d1: "+0.79%", ytd: "+2.08%", signal: "neutral",
+        note: "旅游/餐饮领涨，AMZN/NKE拖累",
+        topPerformers: [
+          { name: "Carnival Corp", ticker: "CCL", change: "+3.77%", note: "Q2订舱率超历史新高，涨价能力验证" },
+          { name: "Chipotle", ticker: "CMG", change: "+3.14%", note: "同店销售超预期，数字订单占比升至45%" },
+        ],
+        worstPerformers: [
+          { name: "NIKE", ticker: "NKE", change: "-2.24%", note: "北美市场份额持续流失至Hoka/On" },
+          { name: "Amazon", ticker: "AMZN", change: "-1.23%", note: "反垄断担忧叠加Retail毛利率压力" },
+        ],
+        longNote: "可选消费板块的内部分化今日极为明显，折射出消费者支出的结构性转变：'体验消费'（旅游、外餐）明显跑赢'商品消费'（运动服饰、电商）。CCL +3.77%的驱动是硬数据支撑：Q2提前订舱率达到历史同期最高，单位票价同比+12%，Net Promoter Score创公司成立以来最高——这意味着邮轮消费者的忠诚度在上升，而不仅仅是低价抢客。CMG +3.14%的背后是AI驱动的营运效率：数字订单占比升至45%减少了人力成本，而Chipotlane（drive-thru）扩张将把2026年AUV（Average Unit Volume）推向$320万以上。反向，NKE -2.24%是一个较长期的结构性问题：北美最宝贵的门店货架空间正在被Hoka、On Running、New Balance侵占，这三个品牌的年轻用户忠诚度指标均超过Nike，品牌力的重建需要2-3年周期。"
+      },
+      {
+        name: "工业", etf: "XLI", weight: "9.0%", d1: "-0.07%", ytd: "+16.63%", signal: "neutral",
+        note: "高位盘整，航天/防务细分逆势强",
+        topPerformers: [
+          { name: "Transocean", ticker: "RIG", change: "+0.17%", note: "深海钻井需求相对稳健" },
+          { name: "Coeur Mining", ticker: "CDE", change: "+4.88%", note: "注：实际归属XLB，黄金矿商" },
+        ],
+        worstPerformers: [
+          { name: "Firefly Aerospace", ticker: "FLY", change: "-19.1%", note: "SpaceX IPO引发同类竞争估值重估" },
+          { name: "York Space Systems", ticker: "YSS", change: "-17.9%", note: "SpaceX IPO竞争压力直接打压" },
+          { name: "AST SpaceMobile", ticker: "ASTS", change: "-15.5%", note: "卫星互联网竞争格局恶化" },
+        ],
+        longNote: "工业板块今日-0.07%背后有一个有趣的分裂：传统工业（制造、物流、基建）在Risk-On环境中小幅回落获利了结；而太空/国防细分出现戏剧性内部分化。SpaceX IPO创造了一个新的定价基准：市场认为$420B估值意味着SpaceX在卫星互联网（Starlink）和运载火箭（Falcon/Starship）上的竞争优势是根本性的，因此其他太空公司（FLY、YSS、ASTS）的估值溢价面临根本性重估——这不是情绪性抛售，是理性的竞争格局重定价。对于传统工业，YTD +16.63%是第二高涨幅板块，高位叠加10Y利率上行（压制制造业资本开支预期），短期动能有所减弱，但基本面并未恶化，等待回撤后再布局。"
+      },
+      {
+        name: "必选消费", etf: "XLP", weight: "4.7%", d1: "+0.35%", ytd: "+10.38%", signal: "neutral",
+        note: "防御属性被淡化，Wind-on格局下微幅参与",
+        topPerformers: [
+          { name: "Conagra Brands", ticker: "CAG", change: "+2.16%", note: "食品通胀传导成功，定价权超预期" },
+          { name: "Itaú Unibanco", ticker: "ITUB", change: "+1.01%", note: "巴西银行 EM风险偏好改善" },
+        ],
+        worstPerformers: [
+          { name: "整体跑输", ticker: "XLP", change: "+0.35%", note: "vs S&P +0.50%，相对表现偏弱" },
+        ],
+        longNote: "必选消费板块在Risk-On环境中的表现符合预期——微幅参与上涨但明显跑输大盘。XLP +0.35% vs S&P 500 +0.50%，相对表现为-0.15%。值得注意的是，CAG +2.16%是板块内最强，原因是食品消费品公司的定价权逻辑：在通胀持续的环境中，消费者对日用食品的价格敏感度低于其他品类，品牌溢价率（private label vs brand premium）维持高位。从配置角度，必选消费在当前环境中的角色是'风险组合的稳定器'而非'进攻型配置'——仅在VIX重新走高（>25）时才考虑加仓。YTD +10.38%的涨幅部分已提前定价了防御价值，估值已不便宜。"
+      },
+      {
+        name: "基础材料", etf: "XLB", weight: "2.9%", d1: "+0.07%", ytd: "+18.81%", signal: "neutral",
+        note: "黄金矿商跑赢，化工拖累整体",
+        topPerformers: [
+          { name: "Coeur Mining", ticker: "CDE", change: "+4.88%", note: "黄金+3%直接受益，金矿杠杆效应" },
+          { name: "B2Gold", ticker: "BTG", change: "+2.93%", note: "中型金矿，运营成本优势" },
+          { name: "Gerdau", ticker: "GGB", change: "+1.93%", note: "巴西钢铁，铁矿石价格支撑" },
+        ],
+        worstPerformers: [
+          { name: "Dow Inc", ticker: "DOW", change: "+0.65%", note: "化工板块受油价下跌拖累原料成本预期" },
+        ],
+        longNote: "基础材料板块+0.07%的微幅表现是两股力量对冲的结果：黄金矿商大幅跑赢（CDE +4.88%、BTG +2.93%），同时化工和工业金属类个股涨幅有限。黄金矿商的表现展现了典型的金矿杠杆效应——金价每上涨1%，低成本金矿股通常上涨2-3%，这是源于固定运营成本结构下的利润弹性。当黄金从$4,100涨至$4,236（+3.3%），All-in Sustaining Cost维持在$1,200/oz的矿商，其EBITDA利润率扩张幅度是金价变动幅度的3倍以上。铜+3.25%（HG=F）是另一个重要信号：铜兼具工业需求代理（经济周期）和能源转型需求（电动车/电网），今日铜涨说明市场在Risk-On的同时也在定价经济不衰退。整体YTD +18.81%是板块第三高，估值已不低，但黄金上行趋势若持续，矿商还有空间。"
+      },
+      {
+        name: "能源", etf: "XLE", weight: "4.9%", d1: "-0.11%", ytd: "+28.93%", signal: "out",
+        note: "伊朗供给预期压制，YTD高位承压",
+        topPerformers: [
+          { name: "Transocean", ticker: "RIG", change: "+0.17%", note: "深海钻井平台合同续签，受益于$80+油价" },
+        ],
+        worstPerformers: [
+          { name: "Cenovus Energy", ticker: "CVE", change: "-0.74%", note: "加拿大重油收益率压缩" },
+          { name: "整体板块", ticker: "XLE", change: "-0.11%", note: "WTI -3.9%，油服+勘探均受拖累" },
+        ],
+        longNote: "能源板块-0.11%的表现是今日最大宏观矛盾：Risk-On环境通常利好能源需求侧，但供给端的伊朗谈判进展彻底压制了这一逻辑。关键背景：OPEC+ 11月会议已确认将2026年日产量增加220万桶，而伊朗若恢复出口则再叠加180-200万桶，全球原油市场将从Q3开始转向供给过剩格局（EIA预测Q4库存累积+85万桶/天）。能源板块的YTD +28.93%是全市场第一，但这个涨幅建立在地缘溢价的基础上——若伊朗谈判落地、OPEC+增产确认，YTD收益将面临均值回归压力。短期操作逻辑：$80是WTI关键支撑，有效跌破将触发系统性止损。当前持有能源头寸的建议：对冲50%油价敞口，或通过期权买入$80 put作为尾部保护。"
+      },
+      {
+        name: "金融", etf: "XLF", weight: "13.2%", d1: "-0.87%", ytd: "-4.79%", signal: "out",
+        note: "今日跑输最显著，信贷担忧升温",
+        topPerformers: [
+          { name: "Bank of America", ticker: "BAC", change: "+1.56%", note: "净息差受益于10Y上行，大行相对优势" },
+          { name: "Banco Bradesco", ticker: "BBD", change: "+1.74%", note: "EM风险偏好改善，巴西银行跟涨" },
+        ],
+        worstPerformers: [
+          { name: "Blue Owl Capital", ticker: "OWL", change: "-0.41%", note: "另类资产管理，利率敏感度高" },
+          { name: "整体板块", ticker: "XLF", change: "-0.87%", note: "vs S&P +0.50%，相对跑输1.37%" },
+        ],
+        longNote: "金融板块-0.87%是今日最大异常信号之一——在Risk-On、利率上行的环境中，银行股理应受益（净息差扩张），但今日偏偏是领跌板块，这值得高度警惕。逻辑链条：长端收益率上行（10Y +4bp至4.487%）对银行利润理论上是利好，但市场似乎在定价另一个风险——信贷质量恶化。当前消费者信贷数据：信用卡逾期率（90天+）升至5.3%（vs 2019年4.1%），商业地产（CRE）贷款在银行资产负债表中的风险权重持续上调。如果10Y升至4.5%以上、经济增长同步放缓，银行面临的是'利率高企但贷款需求萎缩'的双面夹击。YTD -4.79%是11个板块中唯一负收益，这个持续跑输意味着市场并非短期情绪，而是系统性地低估金融板块的信贷风险溢价。当前建议：中性偏空，等待信贷质量数据明确企稳（下一个关键数据点：Q2银行季报，约7月中旬）。"
+      },
+      {
+        name: "房地产", etf: "XLRE", weight: "2.1%", d1: "-0.50%", ytd: "+8.33%", signal: "out",
+        note: "10Y 4.487%高位持续，REITs估值承压",
+        topPerformers: [
+          { name: "数据中心REITs", ticker: "EQIX/DLR", change: "相对较好", note: "AI算力需求驱动数据中心租金+18% YoY" },
+        ],
+        worstPerformers: [
+          { name: "办公室REITs", ticker: "综合", change: "领跌", note: "回办公室政策执行力度低于预期" },
+          { name: "零售REITs", ticker: "综合", change: "承压", note: "电商继续侵蚀实体零售流量" },
+        ],
+        longNote: "房地产板块-0.50%的逻辑简单直接：利率是REITs的定价之锚，10Y每上行50bp，REITs的理论公平价值下降约6-8%（基于DCF敏感性分析）。当前10Y 4.487%已处于历史高位，若进一步升向4.75%，XLRE的YTD收益（+8.33%）面临被完全侵蚀的风险。板块内部存在显著分化：数据中心REITs（Equinix、Digital Realty）受益于AI算力需求爆发，数据中心租金年化涨幅+18%，是利率上行中少数能够对冲的子板块。而传统办公、零售、住宅类REITs则面临双重压力：高利率增加再融资成本 + 基本面弱（空置率仍高）。配置建议：整体回避XLRE，如要配置则精选数据中心REITs，其AI需求驱动的定价能力能够部分对冲利率风险。"
+      },
+      {
+        name: "公用事业", etf: "XLU", weight: "2.1%", d1: "-1.17%", ytd: "+8.46%", signal: "out",
+        note: "今日垫底 — 典型Risk-On防御板块流出",
+        topPerformers: [
+          { name: "核电运营商", ticker: "CEG/VST", change: "相对跑赢", note: "AI数据中心核电协议持续落地" },
+        ],
+        worstPerformers: [
+          { name: "传统公用事业", ticker: "XLU整体", change: "-1.17%", note: "Risk-On资金流出防御板块" },
+        ],
+        longNote: "公用事业-1.17%是今日11个板块中跌幅最大，这是经典的Risk-On信号：当市场情绪从防御转向进攻，防御板块（公用事业、必选消费）的资金会系统性地流向成长板块（通信、科技）。从技术面看，XLU的相对强弱指数（RS vs S&P）已在过去30个交易日持续下行，确认资金轮出趋势。值得关注的子板块例外：核电运营商（CEG、VST）今日相对抗跌，原因是AI数据中心对清洁可靠基荷电力的需求正在成为一个独立的增长叙事——Microsoft、Google均已签署长达20年的核电电力采购协议（PPA），核电公司因此兼具公用事业的稳定性和AI受益的成长性。整体建议：除核电外，暂时回避传统公用事业；VIX若重回25+，再考虑重新配置防御资产。"
+      },
+    ],
+    usNote: "【轮动逻辑】伊朗和平谈判进展提振整体风险偏好，市场出现典型Risk-On轮动：防御板块（公用事业-1.2%、房地产-0.5%、金融-0.9%）资金向成长/周期（通信+2.4%、科技+1.0%）转移。核心驱动：半导体（INTC/AMD）全面重估，SpaceX IPO引爆太空经济叙事。最大异常：金融板块在利率上行环境中跑输——若持续两周，可能预示信贷周期担忧升温，需密切跟踪。",
+    hk: [
+      { name: "科技 / 互联网",   tickers: "腾讯 700 · 阿里 9988 · 美团 3690", signal: "in",
+        note: "本轮港股上涨最确定主线。南向资金持续净流入（本周HK$98亿，年内新高），腾讯WeChat AI整合获用户增长数据支撑，阿里云AI收入连续三季度加速，美团AI配送优化带动利润超预期。监管层表态'支持平台经济健康发展'明确化，政策顶已确认。" },
+      { name: "金融 / 保险",     tickers: "汇丰 11 · 友邦 1299 · 平安 2318",  signal: "neutral",
+        note: "HIBOR高位对港系银行净息差有利，但贷款增速放缓部分对冲。友邦受益于内地高净值客户续保需求和长端利率。平安内地业务受房地产敞口压制。短期方向性待明确，等待降息信号才有系统性机会。" },
+      { name: "能源",            tickers: "中海油 883 · 中石油 857",           signal: "out",
+        note: "WTI -3.9%直接传导，伊朗原油重返市场预期令板块承压。中海油8%+股息仍是安全垫，但油价下行风险短期主导。中性持有高股息敞口，不宜加仓。" },
+      { name: "地产",            tickers: "新鸿基 16 · 长实 1113 · 华润 1109", signal: "out",
+        note: "港楼价仍在调整通道，内房债务风险未完全出清。全球高利率是最大制约。待Fed 9月降息路径明确后再评估。" },
+      { name: "消费 / 零售",     tickers: "安踏 2020 · 李宁 2331 · 百丽 3998", signal: "neutral",
+        note: "五一内地消费数据：服务消费好于商品消费，品牌运动服饰受益健康趋势。安踏海外扩张（FILA）进展顺利，是板块中最强逻辑，但整体定价能力存疑。" },
+    ],
+    hkNote: "【港股轮动】科技/互联网是本轮最确定主线，南向资金是核心催化剂。地产/能源是明确流出方向。金融板块等待降息，宜观望。整体港股轮动节奏与A股科技联动增强，HSCEI > HSI的格局预计延续。",
+  },
+
+  fcn: [
+    { group: "大市值" },
+    {
+      name: "NVIDIA Corp",
+      ticker: "NVDA",
+      sector: "科技 · 半导体",
+      price: "205.19",
+      d1: "+0.16%",
+      iv: "~57%",
+      ivNote: "30D IV 57% vs 1Y HV 42% (+36%溢价)",
+      structure: "6个月 FCN · 行权价 $212（约+3.3% OTM） · 参考票息 ~19-22% p.a. · 月付",
+      thesis: {
+        medLong: "Nvidia的护城河在2026年实际上更宽而非更窄——这与市场部分担忧相反。三个维度：①算力垄断延续性：H100/H200/B200 Blackwell系统在大型语言模型训练上的TCO（总拥有成本）优势估计需要2-3年才会被竞争对手（AMD MI300X、谷歌TPU）显著侵蚀，原因是CUDA软件生态的粘性（超过450万开发者，3,000+优化库）已形成转换成本护城河；②主权AI驱动的需求新增量：沙特（Project Transcendence $100B）、UAE（ASPIRE $40B）、日本（JapanAI $10B）等政府级AI基础设施投资确认，这批订单的技术要求高度匹配NVDA的高端加速器产品线，且是非周期性的政策驱动采购；③Networking从配件变主线：Nvidia的Spectrum-X以太网AI网络方案在大规模集群中的市场份额从0快速升至15%，年化营收贡献已超$20亿，成为第三增长引擎。目标价：$240-250（12个月），当前$205处于合理估值区间，FCN提供了在等待期内获取额外收益的工具。",
+        technical: "技术面：NVDA从2026年初$175的调整低点反弹至$205，修复了2月-4月的回调（-28%）。当前在$200-215区间盘整，这是在为下一轮突破蓄势。关键支撑：$195（50日均线），$185（200日均线）。关键阻力：$215（前高），$240（外推前高+黄金分割）。RSI(14) = 58，处于健康范围，未过热。MACD金叉维持。成交量在盘整期温和收缩，典型的上升三角形形态。FCN逻辑：$212行权价在盘整区间上轨之上，即便股价震荡，到期不被行权的概率较高；若被行权以$212买入，相比当前$205.19仅贵约3.3%，持有成本可接受。"
+      }
+    },
+    {
+      name: "Advanced Micro Devices",
+      ticker: "AMD",
+      sector: "科技 · 半导体",
+      price: "511.57",
+      d1: "+4.73%",
+      iv: "~52%",
+      ivNote: "30D IV 52% vs 1Y HV 38%（+37%溢价，今日大涨后IV spike）",
+      structure: "6个月 FCN · 行权价 $535（约+4.6% OTM） · 参考票息 ~17-20% p.a. · 月付",
+      thesis: {
+        medLong: "AMD在AI加速器市场的地位已从'NVDA替代品'升级为'企业AI预算的第二必选'——这个叙事升级是估值重估的核心逻辑。关键验证：①MI300X GPU已获得Microsoft Azure（Project Olympus）、Google Cloud（A3 Ultra替代）确认的大规模部署，2026年MI300X收入已突破$5B年化run rate，是去年同期的4倍；②EPYC服务器CPU市占率升至约27%（2024年底为16%），来自Intel的份额持续转移，每个百分点约值$400M年化收入；③Pervasive AI战略：AMD收购ZT Systems（AI服务器集成商），打通从芯片到系统的完整AI部署栈，降低客户采购摩擦——这是与NVDA的DGX系统直接竞争的举措。财务数据：2026年EPS共识预期$6.8，YoY +85%，当前P/E 75x看似高，但若2027年EPS达$12（分析师预测），2027 P/E仅43x，成长股估值可接受。风险：AI资本开支周期若在2027年出现明显放缓，AMD的估值弹性（高beta）意味着回撤幅度可能超过NVDA。",
+        technical: "AMD今日大涨+4.73%至$511.57，突破了$495-505的盘整区间上轨，是技术性突破信号。52周范围$117.78-$546.44，当前处于近年高位附近。关键阻力：$530，$546（52周高点）。关键支撑：$490（盘整区间），$470（50日均线）。今日成交量41.8M股，是3个月均量37.6M的1.1倍，放量突破具有说服力。RSI(14)今日收报74，接近超买区域，短期存在回调可能（目标$490-500），FCN在回调时建仓更优。IV今日因涨幅较大而spike，如等待3-5天后IV回落，ticket可以更便宜。FCN行权价$535在52周高点以下，提供了合理的保护边距。"
+      }
+    },
+    {
+      name: "Intel Corporation",
+      ticker: "INTC",
+      sector: "科技 · 半导体/代工",
+      price: "124.57",
+      d1: "+6.51%",
+      iv: "~67%",
+      ivNote: "30D IV 67% vs 1Y HV 44%（+52%溢价，大涨后IV spike至年内新高）",
+      structure: "3个月 FCN · 行权价 $132（约+6% OTM） · 参考票息 ~24-28% p.a. · 月付",
+      thesis: {
+        medLong: "Intel的投资逻辑是2026年最具争议但潜在回报最高的重仓故事。看多逻辑建立在三个阶段性验证上：第一阶段（当前）——Foundry Services外部客户确认：今日股价飙升的核心驱动是市场认为Intel已获得第一个规模量产外部晶圆客户（市场猜测是Amazon AWS或Apple，官方尚未公告），若属实，Intel Foundry从'战略布局'变为'现金流贡献'的时间线将大幅提前；第二阶段（2026 H2）——AI PC换机周期：Intel Core Ultra 300搭载NPU（神经处理单元）正在触发企业PC的AI功能驱动换机，IDC预测2026年AI PC出货量1.4亿台（vs 2024年的0.4亿），Intel占AI PC CPU份额约78%；第三阶段（2027）——Gaudi 3推理芯片大规模商用：在token/dollar经济学上，Gaudi 3的推理成本比H100低38%，这对预算敏感的中型企业是决定性优势。CHIPS Act联邦补贴（$8.5B）已全部到位，资本开支风险大幅降低。最大风险：$210亿净债务在利率高位下的再融资压力，若10Y突破5%，INTC的财务成本将上升约$4亿/年。",
+        technical: "INTC今日+6.51%是全市场单日涨幅最大的百亿美元以上市值标的，成交量22.2M股，达3个月均量的83%，并非异常放量，说明是有基础的上涨而非逼空。从技术形态：INTC在2026年初$95附近触底，经历5个月的底部修复后今日突破$120-125的强阻力带（2025年10月-2026年1月的盘整高点），这是一个较重要的技术突破。52周范围：$68.45-$128（今日高点约$128）。关键支撑：$110（突破前阻力转支撑），$105（200日均线）。关键阻力：$130，$140。今日IV spike至67%，是做FCN票息最肥厚的时候——但同时也意味着市场对后续波动率的预期较高。建议3个月期而非6个月期，以对冲基本面验证窗口内的不确定性。行权价$132约在今日高点$128以上，给予适当缓冲。"
+      }
+    },
+    {
+      name: "Alphabet Inc.",
+      ticker: "GOOGL",
+      sector: "通信服务 · 互联网",
+      price: "359.68",
+      d1: "+0.53%",
+      iv: "~31%",
+      ivNote: "30D IV 31% vs 1Y HV 24%（+29%溢价，较半导体低，票息相对温和）",
+      structure: "6个月 FCN · 行权价 $375（约+4.3% OTM） · 参考票息 ~12-14% p.a. · 月付",
+      thesis: {
+        medLong: "Alphabet是当前最被低估的AI巨头之一——市场给它的AI叙事折扣太大，主要是因为Search Generative Experience（AI搜索）的商业化担忧。但Q1财报已经给出答案：AI Overviews推出后，Search广告收入同比+14%（vs预期+11%），广告主没有因为AI摘要而减少投放，反而通过更精准的用户意图理解提高了ROI，CPM实际上升。三条并行增长引擎：①Search广告（占收入57%）：AI助力年化增速从+9%提升至+13%，可见度清晰；②Google Cloud（占收入13%，毛利率+2ppt YoY）：AI Vertex平台拉动企业云迁移加速，Q1增速+28% YoY，有望成为AWS/Azure之后的第三级；③YouTube（占收入9%）：Shorts的广告变现转化率已追平TikTok，CTV（联网电视）广告市场份额持续从线性TV抢占。估值：EV/EBITDA 18x vs Meta 15x，相对合理，叠加每年$50B的股票回购计划支撑EPS增速。FCN虽然票息温和（12-14%），但标的质量和稳定性更高，适合风险偏好较低的客户。",
+        technical: "GOOGL技术形态健康：从2025年底$162的阶段低点稳步上涨至$360，涨幅+122%，是Mag-7中技术形态最整洁的之一。当前在$340-375区间运行，52周高点$408.61。关键支撑：$340（20周均线），$310（长期趋势支撑）。关键阻力：$380，$408（52周高点兼历史高点）。RSI(14) = 61，处于温和偏强区间，未过热。MACD在0线以上保持多头排列。成交量稳定，24.7M今日，3个月均值29.6M，相对平稳。FCN行权价$375处于当前价格与52周高点之间，被行权的话以$375拿到属于合理水平，持有成本相对舒适，是FCN候选中风险调整后预期最平衡的标的。"
+      }
+    },
+    {
+      name: "Carnival Corporation",
+      ticker: "CCL",
+      sector: "可选消费 · 旅游",
+      price: "29.18",
+      d1: "+3.77%",
+      iv: "~44%",
+      ivNote: "30D IV 44% vs 1Y HV 32%（+38%溢价，旅游板块Risk-On后IV升高）",
+      structure: "3个月 FCN · 行权价 $31（约+6.2% OTM） · 参考票息 ~18-21% p.a. · 月付",
+      thesis: {
+        medLong: "Carnival的投资逻辑是消费周期中最清晰的去杠杆+定价权并行故事：①资产负债表修复：净债务从2022年高点$35B持续下降，2026年底预计降至$26B，2028年自由现金流预计转正，届时将启动股息重建和回购计划，为股价提供底部支撑；②定价能力验证：2026年Q2单位票价同比+12%，远超消费者通胀（3.2%），意味着邮轮消费者的支付意愿在提升而非萎缩；③结构性需求增长：邮轮渗透率（占美国旅游消费的比例）仍低于疫情前，叠加Baby Boomer退休浪潮（每天10,000人退休）带来的旅游需求结构性增量；④运营杠杆：船队利用率从2023年的95%升至2026年Q2的107%（超额订舱），固定成本摊薄效果显著，EBITDA margin将从2025年的22%升至2027年的27%+。主要风险：燃油成本（约占收入18%），若WTI重回$100+，盈利预测将下调8-10%；另一个是消费信贷恶化导致旅游支出收缩，但目前邮轮客户（平均收入$120K+）信用质量远高于平均消费者。",
+        technical: "CCL今日+3.77%是旅游板块Risk-On行情的典型受益。52周范围$22.58-$34.03，当前$29.18处于区间中偏上位置。关键阻力：$31.5（近期高点），$34.03（52周高点）。关键支撑：$27（多次测试支撑），$25（200日均线）。RSI(14) = 55，健康区间，有继续上行空间。成交量今日29.6M，高于3个月均量27.9M，轻度放量上涨，健康。技术形态：过去3个月形成上升通道，今日突破短期盘整上轨。FCN行权价$31处于近期阻力区域——若股价顺势上涨至$31被行权，以$31买入相比今日$29.18仅贵6.2%，持有成本合理。若股价震荡，票息18-21%的年化收益提供了良好的时间价值补偿。"
+      }
+    },
+    {
+      name: "Tesla Inc.",
+      ticker: "TSLA",
+      sector: "可选消费 · 汽车/AI",
+      price: "284.65",
+      d1: "+1.82%",
+      iv: "~76%",
+      ivNote: "30D IV 76% vs 1Y HV 58%（+31%溢价，IV长期结构性偏高）",
+      structure: "3个月 FCN · 行权价 $305（约+7.2% OTM） · 参考票息 ~26-30% p.a. · 月付",
+      thesis: {
+        medLong: "Tesla的多头逻辑在2026年发生了重大叙事切换：从'电动车销量'转向'AI/能源公司'。三个维度：①FSD（Full Self-Driving）v13.2在德州、加州的监管审批进展超预期，若2026年Q3-Q4获批无监督自动驾驶商业运营，Tesla的收入模型将引入高毛利率的Software/Services层（类似iPhone的App Store），市场给予的P/S倍数将完全重构；②Robotaxi正式上线：特斯拉无人出租车队在奥斯汀的初步运营数据（每辆车每天收入$380，利用率72%）超过初始预期，若规模化，这是相当于'买了一个无限可扩展的Uber资产'的投资逻辑；③能源业务：Megapack储能系统订单已至2027年，能源板块毛利率+28%，是当前Tesla业务中增速最快且估值最低的部分。最大风险：马斯克个人品牌负面事件（政治关联、Twitter/X操作）对特斯拉品牌的持续侵蚀，欧洲市场份额2026年下滑11%是真实的警示信号。",
+        technical: "TSLA技术面：从2025年12月$426高点回调至2026年3月$138低点（-67%），后震荡修复至当前$284，是一个深V后的长期盘整形态。当前处于$260-310的宽幅震荡区间中段。关键阻力：$310（区间上轨），$340（黄金分割位）。关键支撑：$255（50日均线），$220（200日均线）。RSI(14) = 53，中性区间，无明显方向信号。IV长期保持在75%+，是市场对TSLA叙事高度不确定的定价——这对FCN买方是利好，能收到更高票息。FCN行权价$305刚好在震荡区间上轨，若TSLA维持在区间内震荡，票息收益确定；若突破$310，被行权以$305买入也在合理位置。"
+      }
+    },
+    {
+      name: "Meta Platforms",
+      ticker: "META",
+      sector: "通信服务 · 社交/AI",
+      price: "651.20",
+      d1: "+0.88%",
+      iv: "~34%",
+      ivNote: "30D IV 34% vs 1Y HV 26%（+31%溢价，稳定大市值，IV相对温和）",
+      structure: "6个月 FCN · 行权价 $685（约+5.2% OTM） · 参考票息 ~13-15% p.a. · 月付",
+      thesis: {
+        medLong: "Meta是2026年Mag-7中最被共识看好的标的之一——原因是基本面的全面改善可见度极高。三条主线：①AI广告收入加速：Meta的Advantage+（AI广告优化平台）已覆盖所有广告主，Q1广告主ROI提升平均+22%，带动广告价格（CPM）全年+17%；②Llama开源战略形成护城河：开源AI模型策略让Meta绑定了全球最大开发者生态，降低了对外部AI基础设施的依赖成本；③Reality Labs从'烧钱黑洞'转向'收入引擎'：Quest 3S + Ray-Ban Meta智能眼镜合计出货量Q1超200万台，Ray-Ban Meta已成为可穿戴AI设备的市场领导者，2026年Reality Labs首次可能实现季度盈亏平衡。估值：EV/EBITDA 15x是Mag-7中最低，叠加$50B年度回购计划。FCN票息温和但标的质量极高，适合追求稳健收益的客户。",
+        technical: "META技术形态强劲：从$340底部区域涨至$651，涨幅+91%，过程平稳，无剧烈震荡。52周范围$339.65-$711.23，当前处于52周区间中下位置。关键支撑：$620（心理整数关口），$590（50日均线）。关键阻力：$680，$711（52周高点）。RSI(14) = 58，健康区间。MACD金叉状态维持。相对S&P 500的超额收益RS线保持向上斜率，说明机构资金持续净流入。FCN行权价$685在52周高点$711以下，提供~4%安全垫，被行权的话以$685买入META处于合理水平。"
+      }
+    },
+    { group: "中市值 / ETF" },
+    {
+      name: "Roku Inc.",
+      ticker: "ROKU",
+      sector: "通信服务 · 流媒体",
+      price: "83.47",
+      d1: "+20.1%",
+      iv: "~84%",
+      ivNote: "30D IV 84% vs 1Y HV 52%（+62%溢价，大涨后IV急剧spike，今日最高机会）",
+      structure: "3个月 FCN · 行权价 $92（约+10.2% OTM） · 参考票息 ~32-38% p.a. · 月付",
+      thesis: {
+        medLong: "ROKU今日+20.1%是全市场最强个股，背后的驱动是一次完整的基本面重估：广告市场从PC/移动端向CTV（联网电视）的迁移比市场预期快了两个季度。关键数据：Q1 ARPU（每用户平均收入）$44.3，YoY +19%；活跃账户增至8,900万，已超过部分线性电视网络的全美覆盖；Roku Channel（自有内容）的月活用户增长+40%，降低了对第三方内容平台的依赖。最重要的是：ROKU已开始与品牌广告主直接签约绕过中间代理商，这将显著提升广告收入的定价权和毛利率（预计从当前52%升至58%+）。FCN场景：今日+20%后股价处于历史高位，短期存在高基数效应下的震荡整理需求，FCN结构正好利用这段震荡窗口收票息，同时行权价$92给出了充足缓冲。",
+        technical: "ROKU今日跳空高开+20%至$83.47，成交量必然是历史超高（IV spike印证）。关键问题：这种暴涨后，股价通常有3种走法：①继续拉升（基本面重估未完成）；②横盘消化（最概率，2-4周）；③回踩（约30%概率，目标$70-72前高附近）。FCN行权价$92是今日高点的约+10%，即便出现一次回踩也不会影响票息收取。52周范围$37.59-$87.42，今日接近打破52周高点。技术支撑：$75-77（前期盘整区间转支撑）。IV在84%是今日最高机会，若等明日IV回落后再做，票息会明显下降。今日是做ROKU FCN的最优时间窗口。"
+      }
+    },
+    {
+      name: "VanEck Gold Miners ETF",
+      ticker: "GDX",
+      sector: "基础材料 · 黄金矿业ETF",
+      price: "52.18",
+      d1: "+3.45%",
+      iv: "~42%",
+      ivNote: "30D IV 42% vs 1Y HV 29%（+45%溢价，金价新高推升IV）",
+      structure: "6个月 FCN · 行权价 $56（约+7.3% OTM） · 参考票息 ~16-18% p.a. · 月付",
+      thesis: {
+        medLong: "GDX是黄金看多逻辑的杠杆工具，适合认为金价上行趋势持续但不想承担单一矿商公司风险的投资者。基本逻辑：当金价处于$4,200+的历史高位，持有金矿股的All-in Sustaining Cost（AISC）通常在$1,150-1,400/oz，当前每盎司利润空间（$4,200 - $1,300 = $2,900）是历史最高水平，矿企的EBITDA margin和自由现金流都在急剧扩张。GDX的前五大持仓（Newmont、Barrick、Agnico Eagle、Wheaton Precious、Franco-Nevada）均为全球最高质量的金矿运营商，ETF结构天然分散了单矿生产事故风险。ETF的票息相较单股更温和，但结构稳定性更好——不会因为某单一矿商的信息披露问题（如SMCI模式）出现黑天鹅暴跌。关键风险：若金价快速回调超过10%（从$4,236跌至~$3,800），GDX会跌20-30%，这是杠杆的双刃剑。",
+        technical: "GDX技术面极强：今日+3.45%创52周以来多个高点联线的突破，金矿股整体处于多年大牛市格局中。52周范围$27.16-$54.50，当前$52.18接近52周高点，处于突破前夕。关键支撑：$48（20日均线），$45（50日均线）。关键阻力：$54.50（52周高点），突破后目标$62（2020年疫情涨幅的黄金分割外推）。RSI(14) = 70，接近超买但金矿股在牛市初期经常在超买区运行数月。成交量今日放大，多头动能强。FCN行权价$56在52周高点以上约+7%，提供了合理缓冲，即便短期获利了结也大概率不会被行权。"
+      }
+    },
+    {
+      name: "KraneShares China Internet ETF",
+      ticker: "KWEB",
+      sector: "EM · 中国互联网ETF",
+      price: "48.35",
+      d1: "+2.14%",
+      iv: "~52%",
+      ivNote: "30D IV 52% vs 1Y HV 38%（+37%溢价，中国政策不确定性长期推高IV）",
+      structure: "3个月 FCN · 行权价 $52（约+7.5% OTM） · 参考票息 ~20-23% p.a. · 月付",
+      thesis: {
+        medLong: "KWEB是港股科技/互联网板块最有效的美股交易工具，持仓包含腾讯（11%）、阿里（10%）、美团（9%）、京东（8%）、百度（7%）等核心中国互联网巨头。看多逻辑：①监管底已确认：2025年底政策层明确表态'支持平台经济健康发展'，互联网反垄断周期已经结束，开始进入'扶持期'；②AI转型贡献增量：腾讯Hunyuan大模型已商业化，云收入Q1+60% YoY；阿里云通义千问API调用量季度环比+120%；③估值极度低估：KWEB当前P/E约11x，与美国科技ETF（QQQ）的P/E 28x相比折价超60%，这个折价历史上有约35%的概率在18-24个月内收窄。FCN适合：KWEB IV长期高于美股ETF（因中国政策不确定性长期存在），可收取更高票息，而实际波动率随监管风险降低后应会收窄——这是一个IV溢价结构性套利机会。",
+        technical: "KWEB从2022年$18低点反弹至当前$48，+167%，技术上处于长期熊转牛的第三阶段（规模型资金流入）。52周范围$28.44-$54.88，当前处于中段偏上。关键支撑：$44（50日均线），$40（200日均线，重要心理支撑）。关键阻力：$52，$54.88（52周高点）。RSI(14) = 61，健康偏强，未过热。南向资金是最关键的近期催化剂监测指标：若周度净流入持续超HK$80亿，KWEB有望在6-8周内测试$54高点。FCN行权价$52设在近期阻力区，提供了合理的保护，同时票息20-23%对中等风险偏好客户具有吸引力。"
+      }
+    },
+    {
+      name: "iShares Bitcoin Trust ETF",
+      ticker: "IBIT",
+      sector: "另类资产 · 比特币ETF",
+      price: "61.84",
+      d1: "+1.56%",
+      iv: "~58%",
+      ivNote: "30D IV 58% vs 1Y HV 47%（+23%溢价，加密市场波动长期偏高）",
+      structure: "3个月 FCN · 行权价 $68（约+10% OTM） · 参考票息 ~22-26% p.a. · 月付",
+      thesis: {
+        medLong: "IBIT是贝莱德发行的比特币现货ETF，自2024年1月获批以来已成为加密资产市场最重要的机构入场通道。当前AUM超$650亿，是全球最大的加密货币ETF，单周净流入最高纪录$15亿。看多逻辑：①机构配置周期才刚开始：养老金/主权基金对比特币ETF的合规配置窗口在2025年底才全面打开，目前仅约18%的机构完成内部合规审核，这个渗透率未来12-18个月会快速提升；②比特币减半效应：2024年4月第四次减半后，历史数据显示牛市通常在减半后12-18个月达到峰值（对应时间窗口约2025年Q4-2026年Q2），当前价格行为与历次减半后走势高度吻合；③宏观逻辑：黄金今日创新高的逻辑（去美元化 + 央行购买）对比特币同样适用，且比特币还有额外的供给确定性（2100万枚上限）。FCN场景：IBIT IV长期高于标准股票ETF，做FCN可收取可观票息。行权价$68是相对保守的位置（+10% OTM），即便短期加密市场回调，FCN结构也有足够缓冲。",
+        technical: "IBIT技术面：从$24低点上涨至$62，涨幅+158%，整体趋势强劲。当前处于$58-68的宽幅盘整区间。关键支撑：$56（最近低点），$50（200日均线）。关键阻力：$68（区间上轨），突破后目标$80+。RSI(14) = 58，温和偏强。IBIT与比特币现货的相关性>0.99，是最纯粹的比特币价格工具。注意：比特币市场24小时运行，IBIT的盘后波动可能较大，IV含有隔夜/周末风险溢价——这在FCN定价中已有体现，实际上这对FCN卖方（即发行方）是利好，对买方（投资者）意味着更高票息。若比特币本周维持在$105K-115K区间，IBIT将大概率在$58-65内震荡，FCN持有至到期的概率较高。"
+      }
+    },
+  ]
+};
+// ═══════════════════════════════════════════════════
+
+// ── STATE ──
+let currentTimeframe = 'd1';
+let currentTab = 'markets';
+
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const tabs = ['markets','sectors','analysis','sellside','fcn'];
+  document.querySelectorAll('.tab')[tabs.indexOf(tab)].classList.add('active');
+  currentTab = tab;
+}
+
+// ── TIMEFRAME ──
+function setTimeframe(tf) {
+  currentTimeframe = tf;
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  const labels = { d1: '1日', w1: '1周', m1: '1月', m6: 'YTD' };
+  document.getElementById('th-pct').textContent = tf === 'm6' ? 'YTD' : labels[tf];
+  renderMarkets();
+}
+
+// ── HELPERS ──
+function pctClass(val, tf) {
+  const n = parseFloat(val);
+  if (Math.abs(n) < 0.05) return 'flat';
+  const thresholds = { d1: [0.5, 1.5], w1: [1, 3], m1: [2, 6], m6: [5, 15] };
+  const [lo, hi] = thresholds[tf] || [1, 3];
+  if (n > 0) return n > hi ? 'up-strong' : n > lo ? 'up-mid' : 'up-weak';
+  return Math.abs(n) > hi ? 'dn-strong' : Math.abs(n) > lo ? 'dn-mid' : 'dn-weak';
+}
+
+function getVal(item, tf) {
+  return { d1: item.d1, w1: item.w1, m1: item.m1, m6: item.m6 }[tf];
+}
+
+function pctBadgeStr(val, tf) {
+  const cls = pctClass(val, tf || 'd1');
+  return `<span class="pct-badge ${cls}">${val}</span>`;
+}
+
+// ── RENDER MARKETS ──
+function renderMarkets() {
+  const tbody = document.getElementById('market-tbody');
+  let html = '';
+  for (const item of BRIEFING.assets) {
+    if (item.group) {
+      html += `<tr class="perf-row group-header"><td colspan="3">${item.group}</td></tr>`;
+      continue;
+    }
+    const val = getVal(item, currentTimeframe);
+    const cls = pctClass(val, currentTimeframe);
+    html += `<tr class="perf-row">
+      <td><div class="asset-name">${item.name}</div><div class="asset-sub">${item.tk}</div></td>
+      <td class="asset-price">${item.price}</td>
+      <td class="pct-cell"><span class="pct-badge ${cls}">${val}</span></td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+// ── RENDER SECTORS ──
+function toggleSectorDetail(idx) {
+  const panel = document.getElementById('sector-panel-' + idx);
+  const btn = document.getElementById('sector-btn-' + idx);
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    btn.textContent = '展开 ▾';
+  } else {
+    panel.classList.add('open');
+    btn.textContent = '收起 ▴';
+  }
+}
+
+function renderSectors() {
+  if (!BRIEFING.sectors) return;
+  const s = BRIEFING.sectors;
+
+  let usHtml = '';
+  s.us.forEach((sec, idx) => {
+    const sigCls = sec.signal === 'in' ? 'sig-in' : sec.signal === 'out' ? 'sig-out' : 'sig-neutral';
+    const sigTxt = sec.signal === 'in' ? '▲ 流入' : sec.signal === 'out' ? '▼ 流出' : '— 中性';
+    const d1Cls  = pctClass(sec.d1, 'd1');
+    const ytdCls = pctClass(sec.ytd, 'm6');
+
+    // Build performers HTML
+    let performersHtml = '';
+    if (sec.topPerformers && sec.topPerformers.length) {
+      performersHtml += `<div class="performer-group-label">⬆ 今日领涨</div>`;
+      sec.topPerformers.forEach(p => {
+        const pCls = pctClass(p.change, 'd1');
+        performersHtml += `<div class="performer-item">
+          <div class="performer-left">
+            <span class="performer-ticker-name">${p.name} <span style="color:var(--text3);font-size:10px;font-weight:400;">${p.ticker}</span></span>
+            <span class="performer-desc">${p.note}</span>
+          </div>
+          <span class="pct-badge ${pCls}" style="min-width:52px">${p.change}</span>
+        </div>`;
+      });
+    }
+    if (sec.worstPerformers && sec.worstPerformers.length) {
+      performersHtml += `<div class="performer-group-label" style="margin-top:10px">⬇ 今日垫底</div>`;
+      sec.worstPerformers.forEach(p => {
+        const pCls = pctClass(p.change, 'd1');
+        performersHtml += `<div class="performer-item">
+          <div class="performer-left">
+            <span class="performer-ticker-name">${p.name} <span style="color:var(--text3);font-size:10px;font-weight:400;">${p.ticker}</span></span>
+            <span class="performer-desc">${p.note}</span>
+          </div>
+          <span class="pct-badge ${pCls}" style="min-width:52px">${p.change}</span>
+        </div>`;
+      });
+    }
+    if (sec.longNote) {
+      performersHtml += `<div class="sector-long-note">${sec.longNote}</div>`;
+    }
+
+    usHtml += `<tr class="sector-row">
+      <td colspan="3" style="padding:0;">
+        <div style="padding:8px 8px 4px 16px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div style="flex:1;">
+              <span class="signal-badge ${sigCls}">${sigTxt}</span>
+              <div class="sector-name">${sec.name}</div>
+              <div class="sector-ticker">${sec.etf} · ${sec.weight}</div>
+              <div class="sector-note">${sec.note}</div>
+              <button class="sector-expand-btn" id="sector-btn-${idx}" onclick="toggleSectorDetail(${idx})">展开 ▾</button>
+            </div>
+            <div style="text-align:right;padding-top:18px;min-width:100px;">
+              <div>${pctBadgeStr(sec.d1, 'd1')}</div>
+              <div style="margin-top:4px;">${pctBadgeStr(sec.ytd, 'm6')}</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px;">YTD</div>
+            </div>
+          </div>
+        </div>
+        <div class="sector-detail-panel" id="sector-panel-${idx}">
+          <div class="sector-detail-inner">${performersHtml}</div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('us-sector-tbody').innerHTML = usHtml;
+  document.getElementById('us-rotation-note').textContent = s.usNote;
+
+  // HK sectors
+  const hkHtml = s.hk.map(sec => {
+    const sigCls = sec.signal === 'in' ? 'sig-in' : sec.signal === 'out' ? 'sig-out' : 'sig-neutral';
+    const sigTxt = sec.signal === 'in' ? '▲ 流入' : sec.signal === 'out' ? '▼ 流出' : '— 中性';
+    return `<div class="analysis-card" style="margin-bottom:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <div class="analysis-card-title" style="margin:0">${sec.name}</div>
+        <span class="signal-badge ${sigCls}">${sigTxt}</span>
+      </div>
+      <div class="sector-ticker" style="margin-bottom:5px">${sec.tickers}</div>
+      <div class="analysis-card-body">${sec.note}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('hk-sector-list').innerHTML = hkHtml;
+  document.getElementById('hk-rotation-note').textContent = s.hkNote;
+}
+
+// ── RENDER ANALYSIS ──
+function renderAnalysis() {
+  document.getElementById('analysis-grid').innerHTML = BRIEFING.drivers.map(d => `
+    <div class="analysis-card">
+      <div class="analysis-card-label">${d.label}</div>
+      <div class="analysis-card-title">${d.title}</div>
+      <div class="analysis-card-body">${d.body}</div>
+    </div>`).join('');
+}
+
+// ── RENDER SELL-SIDE ──
+function renderSellside() {
+  document.getElementById('ss-list').innerHTML = BRIEFING.sellside.map(ss => `
+    <div class="ss-card">
+      <div class="ss-bank">${ss.bank}</div>
+      <div class="ss-date">${ss.date}</div>
+      <div class="ss-headline">${ss.headline}</div>
+      <div class="ss-note">${ss.note}</div>
+    </div>`).join('');
+
+  document.getElementById('theme-list').innerHTML = BRIEFING.themes.map((t, i) => `
+    <div class="theme-card">
+      <div class="theme-num">${i + 1}</div>
+      <div class="theme-text">${t}</div>
+    </div>`).join('');
+}
+
+// ── RENDER FCN ──
+function toggleFCN(idx) {
+  const detail = document.getElementById('fcn-detail-' + idx);
+  const icon = document.getElementById('fcn-icon-' + idx);
+  const isOpen = detail.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.fcn-detail-row').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.fcn-expand-icon').forEach(i => i.classList.remove('rotated'));
+  // Toggle current
+  if (!isOpen) {
+    detail.classList.add('open');
+    icon.classList.add('rotated');
+  }
+}
+
+function renderFCN() {
+  if (!BRIEFING.fcn) return;
+  let html = '';
+  let dataIdx = 0;
+  BRIEFING.fcn.forEach((f) => {
+    if (f.group) {
+      html += `<tr class="fcn-group-row"><td colspan="5">${f.group}</td></tr>`;
+      return;
+    }
+    const idx = dataIdx++;
+    html += `<tr class="fcn-row" onclick="toggleFCN(${idx})">
+      <td>
+        <div class="fcn-name">${f.ticker}</div>
+        <div class="fcn-sector-tag">${f.name} · ${f.sector}</div>
+      </td>
+      <td style="text-align:right"><span style="font-size:12.5px;font-weight:700;">${f.price}</span></td>
+      <td style="text-align:right">${pctBadgeStr(f.d1, 'd1')}</td>
+      <td style="text-align:right">
+        <div class="fcn-iv-val">${f.iv}</div>
+        <div class="fcn-iv-note">${f.ivNote}</div>
+      </td>
+      <td style="text-align:right;padding-right:14px"><span class="fcn-expand-icon" id="fcn-icon-${idx}">▼</span></td>
+    </tr>
+    <tr class="fcn-detail-row" id="fcn-detail-${idx}">
+      <td colspan="5" class="fcn-detail-cell">
+        <div class="fcn-structure-box">
+          <div class="fcn-structure-label">参考结构</div>
+          ${f.structure}
+        </div>
+        <div class="thesis-section">
+          <div class="thesis-label">📋 中长期投资逻辑</div>
+          <div class="thesis-body">${f.thesis.medLong}</div>
+        </div>
+        <div class="thesis-section">
+          <div class="thesis-label">📈 技术面分析</div>
+          <div class="thesis-tech">${f.thesis.technical}</div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('fcn-tbody').innerHTML = html;
+}
+
+// ── TRADINGVIEW WIDGETS ──
+let tvLoaded = false;
+function loadTVWidgets() {
+  if (tvLoaded) return;
+  tvLoaded = true;
+  const charts = [
+    { id: 'tv-sp500',  symbol: 'SP:SPX',    interval: 'W' },
+    { id: 'tv-hsi',    symbol: 'HSI:HSI',   interval: 'W' },
+    { id: 'tv-gold',   symbol: 'COMEX:GC1!',interval: 'W' },
+    { id: 'tv-usdcnh', symbol: 'FX:USDCNH', interval: 'W' },
+    { id: 'tv-oil',    symbol: 'NYMEX:CL1!',interval: 'W' },
+  ];
+  charts.forEach(c => {
+    const el = document.getElementById(c.id);
+    if (!el) return;
+    const container = document.createElement('div');
+    container.className = 'tradingview-widget-container';
+    container.style.height = '220px';
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      symbol: c.symbol, width: '100%', height: '220', locale: 'en',
+      dateRange: '6M', colorTheme: 'dark', isTransparent: true,
+      autosize: true, largeChartUrl: 'https://www.tradingview.com/chart/', noTimeScale: false,
+    });
+    container.appendChild(script);
+    el.parentElement.replaceChild(container, el);
+  });
+}
+
+// ── HEADER ──
+function renderHeader() {
+  document.getElementById('hdr-meta').textContent = BRIEFING.updatedAt + ' · 数据: ' + BRIEFING.date;
+  document.getElementById('hdr-pulse').textContent = BRIEFING.pulse;
+  const s = BRIEFING.sentiment;
+  const cls = s === 'RISK ON' ? 'risk-on' : s === 'RISK OFF' ? 'risk-off' : 'mixed';
+  const emoji = s === 'RISK ON' ? '🟢' : s === 'RISK OFF' ? '🔴' : '🟡';
+  document.getElementById('hdr-sentiment').innerHTML =
+    `<span class="sentiment-chip ${cls}">${emoji} ${s}</span>`;
+}
+
+// ── INIT ──
+renderHeader();
+renderMarkets();
+renderSectors();
+renderAnalysis();
+renderSellside();
+renderFCN();
+</script>
+</body>
+</html>
